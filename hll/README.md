@@ -1,4 +1,4 @@
-# I wrote this description before 吳術宇 pushed his code and I realized it was in Python
+# I wrote this description before 吳述宇 pushed his code and I realized it was in Python
 
 # HyperLogLog Code Description (Section By 吳竣凱)
 I plan to write my code so that it can be implemented in this structure:
