@@ -1,4 +1,4 @@
-// HyperLogLogAutocor.cpp by 吳竣凱 (B12201033)
+// HyperLogLogLDPAutocor.cpp by 吳竣凱 (B12201033)
 // This is only a demonstration of the HyperLogLog's ability to deal with noise, it cannot be used unless combined with BloomCuckoo.cpp
 // ======== INCLUDE ======== //
 #include "HyperLogLog.h"
