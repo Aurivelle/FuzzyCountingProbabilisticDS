@@ -57,6 +57,14 @@ class FuzzyMatcher:
             return 0
         nonzero = [c for c in hit_counts if c > 0]
         return min(nonzero) if nonzero else 0
+    
+    def should_autocorrect(self, text: str, min_count=5) -> bool:
+        """Determine if the word should be autocorrected."""
+        freq = self.query_count(text)
+        match = self.is_match(text)
+        return freq < min_count or not match
+    
+
 
     def stats(self) -> str:
         return (
