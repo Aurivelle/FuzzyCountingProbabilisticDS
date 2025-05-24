@@ -23,7 +23,7 @@ main.cpp                             // Whatever library wrapper
 
 My section will only write the files under `/hll/`
 
-## Integration Notes
+# Integration Notes
 
 To switch from the Bloom+Cuckoo fingerprint design to HLL with LDP:
 
@@ -31,6 +31,9 @@ To switch from the Bloom+Cuckoo fingerprint design to HLL with LDP:
 - Most of the fingerprint logic can remain, but now sketch-based estimation replaces exact fingerprint counting.
 
 In `HyperLogLogLDP.cpp`, I simulate storing HyperLogLog sketches in place of fingerprints in the original algorithm.
+
+# Notes on Autocorrection Suggestion
+The key is to create an `std::unordered_map<std::string, int> candidate_scores` and update it as we process word candidates. This eliminates the need to scan through the entire dictionary to find the optimal score estimation of each candidate. Example of usage can be seen in `HyperLogLogAutocor.cpp` and `HyperLogLogLDPAutocor.cpp`.
 
 # Notes on `HyperLogLogLDPAutocor.cpp`
 Since I didn’t yet have access to the full BloomCuckoo implementation when building the LDP autocorrection, I used a standalone simulation based on:
@@ -43,7 +46,7 @@ This shows the core functionality required for LDP-based buckets:
  - [OK] Segment-level estimation
  - [OK] Drop-in compatibility with the BloomCuckoo structure
 
-# Basic Structure of HyperLogLog.h
+# Basic Structure of `HyperLogLog.h`
 ```
 struct SketchConfig
 class HyperLogLog
