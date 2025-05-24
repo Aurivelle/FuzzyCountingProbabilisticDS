@@ -1,19 +1,15 @@
-// HyperLogLogAutocor.cpp by 吳竣凱 (B12201033)
-// Pure (non-LDP) fuzzy matching using q-gram HLL sketches
-
-// ======== INCLUDE ======== //
+// HyperLogLogAutocor_Candidates.cpp — Pure HLL autocorrection with segment-to-word mapping
 #include "HyperLogLog.h"
 #include <iostream>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <string>
 #include <algorithm>
 #include <iomanip>
-#include <cstring>
 #include <cstdint>
 
-// ======== HELPER FUNCTION ======== //
-// Extract fixed-length q-grams from a word (e.g., "definitely" -> "def", "efi", ...)
+// Extract fixed-length q-grams
 std::vector<std::string> extractQgrams(const std::string& word, int q = 2) {
     std::vector<std::string> grams;
     if (word.size() < q) return grams;
@@ -23,14 +19,14 @@ std::vector<std::string> extractQgrams(const std::string& word, int q = 2) {
     return grams;
 }
 
-// ======== MAIN ======== //
 int main() {
     SketchConfig cfg;
     cfg.b = 4; // 16 registers per HLL
 
     std::unordered_map<std::string, HyperLogLog> qgram_sketches;
+    std::unordered_map<std::string, std::unordered_set<std::string>> qgram_to_words;
+    std::unordered_set<std::string> dictionary;
 
-    // Simulated user inputs with typos or variations
     std::vector<std::pair<std::string, std::string>> user_inputs = {
         {"u1", "apple"},
         {"u2", "banana"},
@@ -39,43 +35,59 @@ int main() {
         {"u5", "banana"}
     };
 
-    // Insert user word q-grams into their respective sketches
     for (const auto& [user, word] : user_inputs) {
-        // std::cout << "[DEBUG] Inserting word: " << word << " from user: " << user << "\n";
-        auto qgrams = extractQgrams(word, 2);
+        dictionary.insert(word);
+        auto qgrams = extractQgrams(word);
         for (const auto& q : qgrams) {
+            qgram_to_words[q].insert(word);
             if (!qgram_sketches.count(q)) {
-                qgram_sketches.emplace(q, cfg);
+                qgram_sketches[q] = HyperLogLog(cfg);
             }
-            // std::cout << "[DEBUG] inserting into qgram '" << q << "' with hash " << murmur3_64(q) << "\n";
             qgram_sketches[q].insert(q + "_" + user);
         }
     }
 
-    // Queries for fuzzy matches
     std::vector<std::string> queries = {"applle", "banana", "banan", "orenge", "grap", "pineapple"};
+
     std::cout << "\n[CHECK] Raw estimates for all q-grams:\n";
     for (const auto& [q, sketch] : qgram_sketches) {
         std::cout << "  -> " << q << ": " << sketch.estimate() << "\n";
     }
 
     for (const auto& query : queries) {
-        auto qgrams = extractQgrams(query, 2);
-        std::vector<int> estimates;
+        auto qgrams = extractQgrams(query);
+        std::unordered_map<std::string, int> candidate_scores;
+        std::vector<double> matched_estimates;
 
         std::cout << std::setw(10) << query << " -> matched segments: ";
+
+        std::string best_match;
+        int best_score = 0;
+
         for (const auto& q : qgrams) {
             if (qgram_sketches.count(q)) {
-                int est = qgram_sketches[q].estimate();
-                estimates.push_back(est);
+                double est = qgram_sketches[q].estimate();
+                matched_estimates.push_back(est);
                 std::cout << q << "(" << est << ") ";
+
+                for (const auto& candidate : qgram_to_words[q]) {
+                    candidate_scores[candidate]++;
+                    if (candidate_scores[candidate] > best_score) {
+                        best_score = candidate_scores[candidate];
+                        best_match = candidate;
+                    }
+                }
             }
         }
         std::cout << "\n";
 
-        if (estimates.size() >= 3) {
-            int result = *std::min_element(estimates.begin(), estimates.end());
-            std::cout << "  -> Estimated users for '" << query << "': " << result << "\n";
+        if (matched_estimates.size() >= 3) {
+            double min_est = *std::min_element(matched_estimates.begin(), matched_estimates.end());
+            std::cout << "  -> Estimated users: " << min_est << "\n";
+
+            if (!best_match.empty()) {
+                std::cout << "  -> Suggested correction: " << best_match << "\n";
+            }
         } else {
             std::cout << "  -> Not enough matching segments to estimate\n";
         }
