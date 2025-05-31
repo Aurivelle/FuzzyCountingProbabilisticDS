@@ -31,7 +31,6 @@ class FuzzyMatcher:
         )
         self._counts: Counter[str] = Counter()
         self._m = m
-        
 
     def insert(self, text: str, weight: int = 1) -> None:
         for seg in self.segmenter.encode_and_segment(text):
@@ -49,22 +48,18 @@ class FuzzyMatcher:
 
     def query_count(self, text: str) -> int:
         segments = self.segmenter.encode_and_segment(text)
-        hit_counts: List[int] = [
-            self._counts.get(seg.to01(), 0) for seg in segments
-        ]
+        hit_counts: List[int] = [self._counts.get(seg.to01(), 0) for seg in segments]
         similarity = sum(c > 0 for c in hit_counts) / self._m
         if similarity < self.st:
             return 0
         nonzero = [c for c in hit_counts if c > 0]
         return min(nonzero) if nonzero else 0
-    
+
     def should_autocorrect(self, text: str, min_count=5) -> bool:
         """Determine if the word should be autocorrected."""
         freq = self.query_count(text)
         match = self.is_match(text)
         return freq < min_count or not match
-    
-
 
     def stats(self) -> str:
         return (
@@ -73,8 +68,14 @@ class FuzzyMatcher:
             f"unique fingerprints: {len(self._counts)}"
         )
 
-    def __contains__(self, text: str) -> bool: 
+    def __contains__(self, text: str) -> bool:
         return self.is_match(text)
+
+    def query_similarity_pair(self, w1: str, w2: str) -> float:
+        segs1 = self.segmenter.encode_and_segment(w1)
+        segs2 = self.segmenter.encode_and_segment(w2)
+        matches = sum(s1 == s2 for s1, s2 in zip(segs1, segs2))
+        return matches / self._m
 
 
 # Test part

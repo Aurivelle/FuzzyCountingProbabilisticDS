@@ -1,48 +1,87 @@
-from pathlib import Path
-from typing import List, Optional
+# Algorithm 3: Count querying with fuzzy matching (server-side)
 
-from difflib import get_close_matches
-from fuzzyMatcher import FuzzyMatcher
+from __future__ import annotations
+from collections import Counter
+from typing import Optional, List
+
+from bloomFilter import BloomSegmenter
+from cuckooFilter import CuckooFilter
 
 
-class Autocorrector:
-
+class FuzzyMatcher:
     def __init__(
         self,
-        vocab: List[str] | Path,
-        *,
         st: float = 0.75,
-        top_k: int = 3,
-    ) -> None:
-        self.top_k = top_k
-        self.fm = FuzzyMatcher(st=st)
+        l: int = 128,
+        k: int = 3,
+        m: int = 4,
+        q: int = 2,
+        fp_len: Optional[int] = 16,
+        bucket_ratio: int = 8,
+    ):
+        if not (0 < st <= 1):
+            raise ValueError("st must be in (0, 1].")
 
-        if isinstance(vocab, Path):
-            vocab = [
-                w.strip() for w in Path(vocab).read_text().splitlines() if w.strip()
-            ]
-        self._dict: set[str] = set(vocab)
-        for w in vocab:
-            self.fm.insert(w)
+        self.st = st
+        self.segmenter = BloomSegmenter(l=l, k=k, m=m, q=q)
+        self.cuckoo = CuckooFilter(
+            num_buckets=bucket_ratio * m,
+            bucket_size=4,
+            fp_len=fp_len,
+        )
+        self._counts: Counter[str] = Counter()
+        self._m = m
 
-    def freq(self, word: str) -> int:
-        return self.fm.query_count(word)
+    def insert(self, text: str, weight: int = 1) -> None:
+        for seg in self.segmenter.encode_and_segment(text):
+            fp = seg.to01()
+            self.cuckoo.insert(fp)
+            self._counts[fp] += weight
 
-    def suggest(self, word: str) -> Optional[List[str]]:
-        if not self.fm.should_autocorrect(word):
-            return None
+    def query_similarity(self, text: str) -> float:
+        segments = self.segmenter.encode_and_segment(text)
+        hits = sum(self.cuckoo.query(seg.to01()) for seg in segments)
+        return hits / self._m
 
-        return get_close_matches(word, self._dict, n=self.top_k, cutoff=self.fm.st)
+    def is_match(self, text: str) -> bool:
+        return self.query_similarity(text) >= self.st
 
-    def add_word(self, word: str) -> None:
-        if word not in self._dict:
-            self._dict.add(word)
-            self.fm.insert(word)
+    def query_count(self, text: str) -> int:
+        segments = self.segmenter.encode_and_segment(text)
+        hit_counts: List[int] = [self._counts.get(seg.to01(), 0) for seg in segments]
+        similarity = sum(c > 0 for c in hit_counts) / self._m
+        if similarity < self.st:
+            return 0
+        nonzero = [c for c in hit_counts if c > 0]
+        return min(nonzero) if nonzero else 0
+
+    def should_autocorrect(self, text: str, min_count=5) -> bool:
+        """Determine if the word should be autocorrected."""
+        freq = self.query_count(text)
+        match = self.is_match(text)
+        return freq < min_count or not match
+
+    def stats(self) -> str:
+        return (
+            f"segments stored: {len(self.cuckoo):d} / {self.cuckoo.capacity} "
+            f"({self.cuckoo.load_factor():.2%}), "
+            f"unique fingerprints: {len(self._counts)}"
+        )
+
+    def __contains__(self, text: str) -> bool:
+        return self.is_match(text)
 
 
+# Test part
 if __name__ == "__main__":
-    ac = Autocorrector(Path("./testcase/database.txt"), st=0.6, top_k=5)
-    tests = ["applle", "banana", "banan", "orenge", "grap", "pineapple"]
-    for w in tests:
-        print(f"{w:<12}  freq≈{ac.freq(w):<3}  sugg={ac.suggest(w)}")
-    print("\nIndex stats:", ac.fm.stats())
+    fm = FuzzyMatcher(st=0.5)
+
+    for w in ["apple", "banana", "grape", "orange", "banana"]:
+        fm.insert(w)
+
+    for q in ["applle", "banana", "banan", "orenge", "grap", "pineapple"]:
+        sim = fm.query_similarity(q)
+        cnt = fm.query_count(q)
+        print(f"{q:10s}  sim={sim:4.2f}  count≈{cnt:<2d}  match={fm.is_match(q)}")
+
+    print(fm.stats())
