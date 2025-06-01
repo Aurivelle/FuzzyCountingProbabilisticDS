@@ -1,6 +1,8 @@
 # How to use this library
 
 ```
+!pip install hll_py
+
 from hll_py import AutoCorrector
 
 # main
