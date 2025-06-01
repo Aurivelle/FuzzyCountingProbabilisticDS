@@ -26,17 +26,20 @@ def autocorrect(user_inputs, queries, q=2, b=4):
     for query in queries:
         qgrams = extract_qgrams(query, q)
         candidate_scores = defaultdict(int)
-        matched_estimates = []
 
         print(f"{query:>10} -> matched segments: ", end="")
         best_match = ""
         best_score = 0
 
+        matched_qgrams = []
+        merged_sketch = HyperLogLog(cfg)
+
         for gram in qgrams:
             if gram in qgram_sketches:
                 est = qgram_sketches[gram].estimate()
-                matched_estimates.append(est)
                 print(f"{gram}({est}) ", end="")
+                matched_qgrams.append(gram)
+                merged_sketch.merge(qgram_sketches[gram])
                 for candidate in qgram_to_words[gram]:
                     candidate_scores[candidate] += 1
                     if candidate_scores[candidate] > best_score:
@@ -44,8 +47,8 @@ def autocorrect(user_inputs, queries, q=2, b=4):
                         best_match = candidate
         print()
 
-        if len(matched_estimates) >= 3:
-            print(f"  -> Estimated users: {min(matched_estimates)}")
+        if len(matched_qgrams) >= 3:
+            print(f"  -> Estimated users: {merged_sketch.estimate():.2f}")
             if best_match:
                 print(f"  -> Suggested correction: {best_match}")
         else:

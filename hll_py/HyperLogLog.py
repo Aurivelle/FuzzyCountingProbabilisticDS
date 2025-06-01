@@ -43,6 +43,12 @@ class HyperLogLog:
         w = hash_val << self.cfg.b
         self.registers[j] = max(self.registers[j], self.rho(w))
 
+    def merge(self, other):
+        if self.m != other.m:
+            raise ValueError("Cannot merge HLLs with different number of registers")
+        for i in range(self.m):
+            self.registers[i] = max(self.registers[i], other.registers[i])
+
     def estimate(self):
         Z = sum([2 ** -r for r in self.registers])
         E = self.alpha_m * self.m ** 2 / Z
