@@ -48,7 +48,7 @@ def autocorrect(user_inputs, queries, q=2, b=4, output_file="suggestions.txt"):
                 matched_qgrams.append(gram)
                 merged_sketch.merge(qgram_sketches[gram])
                 for candidate in qgram_to_words[gram]:
-                    candidate_scores[candidate] += 1
+                    candidate_scores[candidate] += est
                     if candidate_scores[candidate] > best_score:
                         best_score = candidate_scores[candidate]
                         best_match = candidate
