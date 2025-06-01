@@ -1,4 +1,4 @@
-from HyperLogLog import SketchConfig, HyperLogLog
+from .HyperLogLog import SketchConfig, HyperLogLog
 from collections import defaultdict
 
 def extract_qgrams(word, q=2):

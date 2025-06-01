@@ -1,8 +1,8 @@
 import random
 import math
 from collections import defaultdict
-from HyperLogLog import HyperLogLog, SketchConfig
-from Hasher import str_to_u64
+from .HyperLogLog import HyperLogLog, SketchConfig
+from .Hasher import str_to_u64
 
 class HyperLogLogLDP:
     def __init__(self, cfg):

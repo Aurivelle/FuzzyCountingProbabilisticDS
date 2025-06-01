@@ -1,6 +1,6 @@
 import math
 from typing import List
-from Hasher import str_to_u64
+from .Hasher import str_to_u64
 
 class SketchConfig:
     def __init__(self, b=4, m=4, use_bias_correction=True, alpha_override=-1.0, epsilon=4.0):
