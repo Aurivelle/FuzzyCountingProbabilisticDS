@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hll_py"
-version = "0.1.7"
+version = "0.1.11"
 description = "A Python library for fuzzy matching and local differentially private counting using probabilistic data structures like HyperLogLog."
 readme = "README.md"
 license = {text = "MIT"}
@@ -15,4 +15,6 @@ Homepage = "https://github.com/SY-David/AdvDS-Final-Project/tree/main/hll_py"
 Repository = "https://github.com/SY-David/AdvDS-Final-Project/tree/main/hll_py"
 
 [tool.setuptools.packages.find]
-where = ["hll_py"]
+
+where = ["."]
+include = ["hll_py", "hll_py.*"]
