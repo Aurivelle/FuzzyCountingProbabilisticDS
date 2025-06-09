@@ -15,4 +15,4 @@ Homepage = "https://github.com/SY-David/AdvDS-Final-Project/tree/main/hll_py"
 Repository = "https://github.com/SY-David/AdvDS-Final-Project/tree/main/hll_py"
 
 [tool.setuptools.packages.find]
-where = ["hll_py"]
+where = ["."]
