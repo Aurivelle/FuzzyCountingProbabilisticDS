@@ -39,7 +39,7 @@ def autocorrect(user_inputs, queries, q=2, b=4):
         for gram in qgrams:
             if gram in qgram_sketches:
                 est = qgram_sketches[gram].estimate()
-                # print(f"{gram}({est}) ", end="")
+                print(f"{gram}({est}) ", end="")
                 matched_qgrams.append(gram)
                 merged_sketch.merge(qgram_sketches[gram])
                 for candidate in qgram_to_words[gram]:
