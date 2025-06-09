@@ -49,7 +49,7 @@ def autocorrect(user_inputs, queries, q=2, b=4):
                         best_match = candidate
         print()
 
-        if len(matched_qgrams) >= 2:
+        if len(matched_qgrams) >= 3:
             # print(f"  -> Estimated users: {merged_sketch.estimate()}")
             if best_match:
                 print(f"  -> Suggested correction: {best_match}")
