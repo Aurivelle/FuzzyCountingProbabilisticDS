@@ -1,6 +1,6 @@
 import math
 from typing import List
-from .Hasher import str_to_u64
+from Hasher import str_to_u64
 
 class SketchConfig:
     def __init__(self, b=4, m=4, use_bias_correction=True, alpha_override=-1.0, epsilon=4.0):
@@ -30,9 +30,12 @@ class HyperLogLog:
             return 0.7213 / (1 + 1.079 / self.m)
 
     def rho(self, w_suffix):
-        return (w_suffix.bit_length() - w_suffix.bit_length() + 1
-                if w_suffix == 0 else
-                64 - w_suffix.bit_length() + 1)
+        if w_suffix == 0:
+            return 64
+        return (w_suffix.bit_length() - 1) ^ 63
+        # return (w_suffix.bit_length() - w_suffix.bit_length() + 1
+        #         if w_suffix == 0 else
+        #         64 - w_suffix.bit_length() + 1)
 
     def insert(self, value):
         if isinstance(value, str):
