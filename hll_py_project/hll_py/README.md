@@ -1,12 +1,19 @@
 # How to use this library
 
 ```
-from hll_py import HyperLogLog, HyperLogLogLDP, autocorrect
+# pip install package
+pip install hll_py
 
-cfg = HyperLogLog.SketchConfig(b=4)
-hll = HyperLogLog.HyperLogLog(cfg)
+# import hll_py
+from hll_py import autocorrect
 
-# Use hll
-results = autocorrect(user_inputs, queries)
+# main
+history_input = [("u1","apple"),
+    ("u2", "banana"),
+    ("u3", "grape"),
+    ("u4", "orange"),
+    ("u5", "banana")
+]
+queries = ["applle", "banana", "banan", "orenge", "grap", "pineapple"]
 
-```
+results = autocorrect(history_input, queries)
