@@ -15,5 +15,4 @@ history_input = [("u1","apple"),
 queries = ["applle", "banana", "banan", "orenge", "grap", "pineapple"]
 
 results = AutoCorrector.autocorrect(history_input, queries)
-
 ```
