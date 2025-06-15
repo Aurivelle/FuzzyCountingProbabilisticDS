@@ -1,8 +1,4 @@
-# I wrote this description before 吳述宇 pushed his code and I realized it was in Python
-
 # HyperLogLog Code Description (Section By 吳竣凱)
-I plan to write my code so that it can be implemented in this structure:
-
 ```
 /src/
   └─ /hll/
@@ -58,19 +54,17 @@ To test the standalone pure HLL:
 
 ```
 g++ HyperLogLogAutocor.cpp HyperLogLog.cpp HyperLogLogLDP.cpp Hasher.cpp -std=c++20
-./a.out
 ```
 
 To test the LDP sketch simulation:
 
 ```
 g++ HyperLogLogLDPAutocor.cpp HyperLogLog.cpp HyperLogLogLDP.cpp Hasher.cpp -std=c++20
-./a.out
 ```
 
 # Remark
 Here for testing purposes, I set `cfg.b = 4`. For larger data sets, I suggest using `10 ≤ cfg.b ≤ 16`
 
 # References
- - Original paper on LDP, i.e. [Locally Differentially Private Fuzzy Conting in Stream Data using Probabilistic Data Strctures [VBA22]](https://ieeexplore.ieee.org/document/9855874) (`/ref/ldp_bloom_cuckoo.pdf`)
- - [HyperLogLog: the analysis of a near-optimal cardinality estimation algorithm [Fla+07]](https://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf) (`/ref/hyperloglog.pdf`) to implement HyperLogLog
+ - Original paper on LDP, i.e. [Locally Differentially Private Fuzzy Conting in Stream Data using Probabilistic Data Strctures [VBA22]](https://ieeexplore.ieee.org/document/9855874) 
+ - [HyperLogLog: the analysis of a near-optimal cardinality estimation algorithm [Fla+07]](https://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf) to implement HyperLogLog
